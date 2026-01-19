@@ -1,0 +1,171 @@
+# System Requirement Specification: Rental Management System (RentCore)
+**Version:** 1.0  
+**Status:** Draft / For Review  
+**Role:** Senior Software Architect / Business Analyst  
+
+---
+
+## 1. บทสรุปผู้บริหาร (Executive Summary)
+ระบบ RentCore คือระบบบริหารจัดการห้องเช่าแบบ Hybrid (รายเดือน และ รายวัน) ที่ออกแบบมาเพื่อรองรับธุรกิจที่มีหลายสาขา (Multi-branch) โดยเน้นความถูกต้องของข้อมูล (Data Integrity), ตรวจสอบย้อนหลังได้ (Auditable) และความคล่องตัวในการใช้งานจริง (Production-ready)
+
+### วัตถุประสงค์หลัก
+- จัดการข้อมูลห้องพักและสถานะได้แบบ Real-time
+- ออกบิลรายเดือนอัตโนมัติ และจัดการสัญญาเช่า
+- รองรับการจองรายวันโดยป้องกันการจองซ้อน (Double Booking)
+- มีระบบยืนยันสลิปการโอนเงินที่ตรวจสอบได้
+- มีระบบ Audit Log ทุกเหตุการณ์สำคัญเพื่อป้องกันการทุจริตหรือข้อผิดพลาดจาก User
+
+---
+
+## 2. ขอบเขตของระบบ (Project Scope)
+- **Multi-Branch:** รองรับ 10 สาขา รวมประมาณ 150 ห้อง
+- **Hybrid Model:** รองรับทั้งผู้เช่ารายเดือน (Lease) และผู้เช่ารายวัน (Daily Stay)
+- **Payment:** ปัจจุบันรองรับการอัปโหลดสลิปและการบันทึกโดยเจ้าหน้าที่ (ยังไม่เชื่อม Payment Gateway)
+- **Document Management:** เก็บเอกสารสัญญาและบัตรประชาชนผู้เช่า
+- **Audit & Security:** ระบบเก็บประวัติการแก้ไขข้อมูล (Soft Delete Only)
+
+---
+
+## 3. สิทธิ์การใช้งาน (User Roles & Permissions)
+1. **Owner:** เข้าถึงข้อมูลได้ทุกสาขา, ดูรายงานภาพรวมกำไร-ขาดทุน, จัดการ Admin
+2. **Admin:** จัดการข้อมูล Master Data (สาขา, ตึก, ราคา), จัดการ User ในระบบ
+3. **Branch Manager:** จัดการข้อมูลภายในสาขาที่ได้รับมอบหมาย, อนุมัติการคืนเงินมัดจำ
+4. **Accounting Staff:** ตรวจสอบสลิป, ออกใบแจ้งหนี้, จัดการสถานะการชำระเงิน
+5. **Maintenance Staff:** ดูสถานะห้องที่ต้องซ่อม, ปรับสถานะห้องเป็น MAINTENANCE/VACANT
+6. **Tenant (ผู้เช่า):** ดูใบแจ้งหนี้, ประวัติการชำระเงิน, อัปโหลดสลิป, แจ้งซ่อม
+
+---
+
+## 4. กระบวนการทางธุรกิจ (Business Flow)
+
+### 4.1 ขั้นตอนการรับผู้เช่ารายเดือน (Monthly Lease)
+1. **Move-in:** พนักงานสร้างบัญชีผู้เช่า -> แนบเอกสาร -> สร้างสัญญา (Lease) -> ระบุห้อง
+2. **Billing:** ทุกวันที่กำหนด (Billing Day) ระบบจะ Generate Invoice อัตโนมัติ (ค่าเช่า + ค่าน้ำ/ไฟ + อื่นๆ)
+3. **Payment:** ผู้เช่าได้รับแจ้งเตือน -> อัปโหลดสลิป -> พนักงานบัญชีตรวจสอบ -> กดยืนยัน (Confirm)
+4. **Locked:** เมื่อยืนยันแล้ว Invoice จะถูก Lock ห้ามแก้ไข เพื่อความถูกต้องของบัญชี
+
+### 4.2 ขั้นตอนการจองรายวัน (Daily Stay)
+1. **Booking:** ระบบเช็คห้องว่างในช่วงวันที่กำหนด (ห้ามซ้อนกันด้วย Exclusion Constraint)
+2. **Check-in/out:** พนักงานเปลี่ยนสถานะห้องเมื่อผู้เช่าเข้าพักและออก
+3. **Billing:** ระบบสร้าง Invoice ตามจำนวนคืนและราคา ณ วันจอง
+
+---
+
+## 5. รายการหน้าจอที่ต้องพัฒนา (Screen List)
+
+### Admin Portal
+- **Dashboard:** สรุปยอดรายได้, อัตราการเข้าพักแต่ละสาขา
+- **Branch Management:** เพิ่ม/ลบ/แก้ไข สาขา, ตึก, ชั้น, ห้อง
+- **Pricing Management:** กำหนดราคาห้องพักรายเดือน/รายวัน แยกตามประเภทห้อง
+- **User Management:** จัดการพนักงานและสิทธิ์ (RBAC)
+- **Audit Log:** หน้าจอค้นหาและตรวจสอบประวัติการทำรายการ
+
+### Staff Portal (Branch/Accounting)
+- **Room Grid View:** ดูผังห้องพักและสถานะ (Color-coded)
+- **Tenant Directory:** ค้นหาผู้เช่าและประวัติการเข้าพัก
+- **Invoice Center:** จัดการใบแจ้งหนี้, บันทึกการจ่ายเงิน, ดูสลิปที่รอตรวจสอบ
+- **Reporting:** Export รายงานรายได้/ลูกหนี้ (CSV/PDF)
+
+### Tenant Portal (Mobile Responsive)
+- **My Room:** ดูรายละเอียดสัญญาปัจจุบัน
+- **Billing History:** ดูรายการหนี้ปัจจุบันและประวัติย้อนหลัง
+- **Payment Upload:** หน้าจอสำหรับเลือก Invoice และแนบไฟล์สลิป
+
+---
+
+## 6. สถาปัตยกรรมทางเทคนิค (Technical Architecture)
+- **Frontend:** React หรือ Next.js (Admin/Tenant Web)
+- **Backend:** Node.js (Express/Fastify) หรือ Go (REST API)
+- **Database:** PostgreSQL (Relational) - ใช้ UUID และ Timezone-aware
+- **File Storage:** AWS S3 หรือ MinIO (สำหรับเก็บรูปสลิปและเอกสาร)
+- **Authentication:** JWT (JSON Web Token) + Roles Based Access Control
+- **Security:** Hashing Password (bcrypt), File Hash Verification
+
+---
+
+---
+
+## 7. แบบจำลองข้อมูล (Data Model)
+*รายละเอียดความสัมพันธ์และ Schema ได้ถูกออกแบบไว้ดังนี้:*
+
+### 7.1 ER Diagram (Mermaid)
+```mermaid
+erDiagram
+    BRANCHES ||--o{ BUILDINGS : has
+    BUILDINGS ||--o{ FLOORS : has
+    FLOORS ||--o{ ROOMS : has
+    BRANCHES ||--o{ USERS : employs
+    ROOMS ||--o{ ROOM_PRICES : priced_by
+    TENANTS ||--o{ LEASES : signs
+    ROOMS ||--o{ LEASES : leased_in
+    ROOMS ||--o{ DAILY_STAYS : stayed_in
+    TENANTS ||--o{ DAILY_STAYS : books
+    LEASES ||--o{ INVOICES : generates
+    INVOICES ||--o{ INVOICE_ITEMS : contains
+    INVOICES ||--o{ PAYMENTS : receives
+    PAYMENTS ||--o| PAYMENT_SLIPS : proof
+    USERS ||--o{ AUDIT_LOGS : performs
+    BRANCHES ||--o{ AUDIT_LOGS : scope
+    
+    USERS }o--|| ROLES : has
+    ROLES }o--o{ PERMISSIONS : grants
+```
+
+### 7.2 Database Schema (Full Dictionary)
+
+| Table | Description | Key Fields |
+| :--- | :--- | :--- |
+| **branches** | ข้อมูลสาขา | id, code, name, address, phone |
+| **buildings** | ข้อมูลตึกในสาขา | id, branch_id, name, sort_order |
+| **floors** | ข้อมูลชั้นในตึก | id, building_id, floor_no, name |
+| **rooms** | ข้อมูลห้องพัก | id, floor_id, branch_id, room_no, status, capacity |
+| **room_prices** | ประวัติและเรตราคา | room_id, price_type (MONTH/DAY), price_amount |
+| **tenants** | ข้อมูลผู้เช่า | id, full_name, phone, id_card_no, contact_info |
+| **leases** | สัญญารายเดือน | room_id, tenant_id, start_date, rent_monthly, status |
+| **daily_stays** | การพักรายวัน | room_id, tenant_id, check_in_at, check_out_at, total_amount |
+| **invoices** | ใบแจ้งหนี้ | lease_id, room_id, invoice_no, total, status, is_locked |
+| **payments** | ข้อมูลการชำระเงิน | invoice_id, amount, method, status (SUBMITTED/CONFIRMED) |
+| **audit_logs** | ประวัติการใช้งาน | user_id, action, entity_type, before_json, after_json |
+
+---
+
+## 8. รายการ API (API List)
+
+### Auth Module
+- `POST /api/v1/auth/login`: พิสูจน์ตัวตนและรับ JWT
+- `GET /api/v1/auth/me`: ดูข้อมูลโปรไฟล์ตัวเองและสิทธิ์
+
+### Property Module
+- `GET /api/v1/branches`: รายชื่อสาขา
+- `GET /api/v1/rooms`: รายชื่อห้อง (Filter ตามสถานะ/สาขา)
+- `PATCH /api/v1/rooms/:id/status`: ปรับสถานะห้อง (เช่น MAINTENANCE)
+
+### Lease & Stay Module
+- `POST /api/v1/leases`: ทำสัญญารายเดือนใหม่
+- `GET /api/v1/daily-stays/availability`: เช็คห้องว่างสำหรับรายวัน
+- `POST /api/v1/daily-stays`: จองห้องพักรายวัน
+
+### Billing Module
+- `GET /api/v1/invoices`: ดูรายการใบแจ้งหนี้ (Filter ตามสถานะ/สาขา)
+- `POST /api/v1/invoices/generate-monthly`: สั่ง Run ระบบออกบิล (Admin)
+- `POST /api/v1/payments/:invoiceId/upload-slip`: ผู้เช่าอัปโหลดสลิป
+- `PATCH /api/v1/payments/:id/confirm`: พนักงานยืนยันการรับเงิน
+
+### Report & Audit Module
+- `GET /api/v1/reports/revenue`: รายงานรายได้แยกสาขา
+- `GET /api/v1/audit-logs`: ดูประวัติการแก้ไขข้อมูล
+
+---
+
+## 9. แผนการพัฒนา (Development Roadmap)
+- **Phase 1 (MVP - 4 Weeks):** ระบบจัดการ Master Data (Branch, Room) และระบบผู้เช่ารายเดือน (Lease/Invoice)
+- **Phase 2 (Payment & Audit - 3 Weeks):** ระบบอัปโหลดสลิป, การตรวจยืนยันสลิป, Audit Log และสิทธิ์การใช้งาน (RBAC)
+- **Phase 3 (Daily Stay & Report - 3 Weeks):** ระบบจองรายวันพร้อม Exclusion Constraint, ระบบรายงาน Export PDF/CSV
+
+---
+
+## 10. จุดเสี่ยงและสิ่งที่ควรระวัง (Risks & Precautions)
+1. **Concurrent Booking:** ป้องกันการจองห้องเดียวกันในเวลาเดียวกัน (ใช้ Database-level locking/constraints)
+2. **Security of Slips:** ป้องกันการแก้ไขไฟล์สลิปหลังจากยืนยันแล้ว (ใช้ File Hashing กับ Object Storage)
+3. **Data Privacy:** ข้อมูลบัตรประชาชนผู้เช่าต้องได้รับการคุ้มครองตาม PDPA (แนะนำให้ Masking หรือเข้ารหัสในระดับ Database)
+4. **Accounting Integrity:** ใบแจ้งหนี้ที่ PAID แล้วห้ามลบทิ้งเด็ดขาด ให้ใช้สถานะ VOID พร้อมเหตุผลและเก็บใน Audit Log เท่านั้น

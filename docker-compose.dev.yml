@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: rentcore-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rentcore_dev
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: rentcore_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/migrations:/docker-entrypoint-initdb.d/migrations
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rentcore_dev -d rentcore_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - rentcore-dev-network
+
+  pgadmin-dev:
+    image: dpage/pgadmin4:latest
+    container_name: rentcore-pgadmin-dev
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dev@rentcore.local
+      PGADMIN_DEFAULT_PASSWORD: dev_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5051:80"
+    volumes:
+      - pgadmin-dev-data:/var/lib/pgadmin
+    depends_on:
+      - postgres-dev
+    networks:
+      - rentcore-dev-network
+
+volumes:
+  postgres-dev-data:
+  pgadmin-dev-data:
+
+networks:
+  rentcore-dev-network:
+    driver: bridge

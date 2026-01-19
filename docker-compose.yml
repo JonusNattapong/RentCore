@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: rentcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rentcore
+      POSTGRES_PASSWORD: rentcore_password
+      POSTGRES_DB: rentcore
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/migrations:/docker-entrypoint-initdb.d/migrations
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U rentcore -d rentcore" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rentcore-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: rentcore-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@rentcore.local
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - rentcore-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rentcore-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: rentcore
+      DATABASE_USER: rentcore
+      DATABASE_PASSWORD: rentcore_password
+      JWT_SECRET: ${JWT_SECRET:-change_this_in_production}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rentcore-network
+    volumes:
+      - ./uploads:/app/uploads
+
+  # DeepSeek-OCR AI Service (GPU Required)
+  deepseek-ocr:
+    build:
+      context: ./docker/deepseek-ocr
+      dockerfile: Dockerfile
+    container_name: rentcore-deepseek-ocr
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - deepseek-cache:/app/cache
+      - ./uploads:/app/uploads
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - HF_TOKEN=${HF_TOKEN:-}
+    networks:
+      - rentcore-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PaddleOCR Service (CPU - No GPU Required, Thai Language)
+  paddleocr:
+    build:
+      context: ./docker/paddleocr
+      dockerfile: Dockerfile
+    container_name: rentcore-paddleocr
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    volumes:
+      - paddleocr-cache:/root/.paddleocr
+      - ./uploads:/app/uploads
+    networks:
+      - rentcore-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+  deepseek-cache:
+  paddleocr-cache:
+
+
+networks:
+  rentcore-network:
+    driver: bridge
