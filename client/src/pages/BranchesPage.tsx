@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { branchService } from '../services/api';
-import { Plus, Edit2, MapPin, Building, Trash2 } from 'lucide-react';
+import { Building2, MapPin, Phone, CreditCard, Plus } from 'lucide-react';
 
 const BranchesPage = () => {
     const [branches, setBranches] = useState<any[]>([]);
@@ -21,18 +21,18 @@ const BranchesPage = () => {
         }
     };
 
-    if (loading) return <div className="loading">Loading branches...</div>;
+    if (loading) return <div className="loading">กำลังโหลดข้อมูลสาขา...</div>;
 
     return (
         <div className="page-container">
             <div className="page-header">
                 <div>
-                    <h1>Branches & Properties</h1>
-                    <p>Manage your physical locations and bank details.</p>
+                    <h1>จัดการสาขาและหอพัก</h1>
+                    <p>ข้อมูลสาขาทั้งหมด รายละเอียดบัญชีธนาคาร และที่ตั้ง</p>
                 </div>
                 <button className="btn btn-primary">
                     <Plus size={18} />
-                    New Branch
+                    เพิ่มสาขาใหม่
                 </button>
             </div>
 
@@ -41,30 +41,39 @@ const BranchesPage = () => {
                     <div key={branch.id} className="card branch-card">
                         <div className="branch-card-header">
                             <div className="branch-icon">
-                                <Building size={24} />
+                                <Building2 size={24} />
                             </div>
-                            <div className="branch-actions">
-                                <button className="btn-icon"><Edit2 size={16} /></button>
-                                <button className="btn-icon text-error"><Trash2 size={16} /></button>
-                            </div>
+                            <button className="btn btn-secondary btn-sm">แก้ไข</button>
                         </div>
 
                         <div className="branch-card-body">
                             <h3>{branch.name}</h3>
                             <div className="branch-info-item">
                                 <MapPin size={16} />
-                                <span>{branch.address || 'No address set'}</span>
+                                <span>{branch.address || 'ไม่ระบุที่อยู่'}</span>
+                            </div>
+                            <div className="branch-info-item">
+                                <Phone size={16} />
+                                <span>{branch.phone || '-'}</span>
+                            </div>
+
+                            <div className="mt-2 p-1 bg-slate-50 rounded">
+                                <label className="text-xs font-bold text-muted uppercase">ข้อมูลธนาคารสำหรับ OCR</label>
+                                <div className="flex-center-gap mt-1">
+                                    <CreditCard size={14} className="text-primary" />
+                                    <span className="text-sm">{branch.bank_name}: {branch.account_number}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div className="branch-card-footer">
                             <div className="info-badge">
-                                <label>Bank</label>
-                                <span>{branch.bank_account_name || 'N/A'}</span>
+                                <label>จำนวนห้อง</label>
+                                <span>{branch.total_rooms || 0} ห้อง</span>
                             </div>
                             <div className="info-badge">
-                                <label>Account</label>
-                                <span>{branch.bank_account_no || 'N/A'}</span>
+                                <label>ผู้เช่า</label>
+                                <span>{branch.total_tenants || 0} คน</span>
                             </div>
                         </div>
                     </div>

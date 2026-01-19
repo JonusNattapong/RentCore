@@ -7,7 +7,6 @@ const LoginPage = ({ onLogin }: { onLogin: (token: string) => void }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, you'd call authService.login
         onLogin('mock-token');
     };
 
@@ -19,18 +18,18 @@ const LoginPage = ({ onLogin }: { onLogin: (token: string) => void }) => {
                         <Layers size={40} />
                         <span>RentCore</span>
                     </div>
-                    <h1>Welcome Back</h1>
-                    <p>Enter your credentials to access the admin panel.</p>
+                    <h1>ยินดีต้อนรับ</h1>
+                    <p>กรุณาเข้าสู่ระบบเพื่อจัดการระบบหอพักของคุณ</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">
-                        <label>Email Address</label>
+                        <label>ชื่อผู้ใช้งาน หรือ อีเมล</label>
                         <div className="input-with-icon">
                             <Mail size={18} />
                             <input
-                                type="email"
-                                placeholder="admin@example.com"
+                                type="text"
+                                placeholder="ชื่อผู้ใช้งาน หรือ email@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -39,7 +38,7 @@ const LoginPage = ({ onLogin }: { onLogin: (token: string) => void }) => {
                     </div>
 
                     <div className="form-group">
-                        <label>Password</label>
+                        <label>รหัสผ่าน</label>
                         <div className="input-with-icon">
                             <Lock size={18} />
                             <input
@@ -53,13 +52,13 @@ const LoginPage = ({ onLogin }: { onLogin: (token: string) => void }) => {
                     </div>
 
                     <button type="submit" className="btn btn-primary btn-block mt-2">
-                        Sign In
+                        เข้าสู่ระบบ
                         <ArrowRight size={18} />
                     </button>
                 </form>
 
                 <div className="login-footer">
-                    <a href="#">Forgot password?</a>
+                    <a href="#">ลืมรหัสผ่าน?</a>
                 </div>
             </div>
         </div>

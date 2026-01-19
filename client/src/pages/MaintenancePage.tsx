@@ -12,9 +12,9 @@ const MaintenancePage = () => {
     const loadRequests = async () => {
         try {
             setRequests([
-                { id: 1, room: '204', issue: 'Air conditioner not cooling', priority: 'HIGH', status: 'PENDING', created_at: new Date() },
-                { id: 2, room: '101', issue: 'Leaking faucet in bathroom', priority: 'MEDIUM', status: 'IN_PROGRESS', created_at: new Date() },
-                { id: 3, room: '405', issue: 'Light bulb replacement', priority: 'LOW', status: 'COMPLETED', created_at: new Date() },
+                { id: 1, room: '204', issue: 'แอร์ไม่เย็น', priority: 'HIGH', status: 'PENDING', created_at: new Date() },
+                { id: 2, room: '101', issue: 'ก๊อกน้ำอ่างล้างหน้าซึม', priority: 'MEDIUM', status: 'IN_PROGRESS', created_at: new Date() },
+                { id: 3, room: '405', issue: 'หลอดไฟหน้าห้องขาด', priority: 'LOW', status: 'COMPLETED', created_at: new Date() },
             ]);
         } catch (err) {
             console.error(err);
@@ -25,9 +25,9 @@ const MaintenancePage = () => {
 
     const getPriorityBadge = (priority: string) => {
         switch (priority) {
-            case 'HIGH': return <span className="badge-pill bg-error">HIGH</span>;
-            case 'MEDIUM': return <span className="badge-pill bg-warning">MEDIUM</span>;
-            default: return <span className="badge-pill bg-primary-light">LOW</span>;
+            case 'HIGH': return <span className="badge-pill bg-error">เร่งด่วน</span>;
+            case 'MEDIUM': return <span className="badge-pill bg-warning">ปกติ</span>;
+            default: return <span className="badge-pill bg-primary-light">ทั่วไป</span>;
         }
     };
 
@@ -35,12 +35,12 @@ const MaintenancePage = () => {
         <div className="page-container fade-in">
             <div className="page-header">
                 <div>
-                    <h1>Maintenance Requests</h1>
-                    <p>Track and manage repair requests from your tenants.</p>
+                    <h1>รายการแจ้งซ่อม</h1>
+                    <p>ติดตามและจัดการรายการแจ้งซ่อมบำรุงจากผู้เช่า</p>
                 </div>
                 <button className="btn btn-primary">
                     <Plus size={18} />
-                    New Request
+                    เพิ่มรายการแจ้งซ่อม
                 </button>
             </div>
 
@@ -52,7 +52,7 @@ const MaintenancePage = () => {
                         </div>
                     </div>
                     <div className="stats-content">
-                        <p className="stats-title">Pending Tasks</p>
+                        <p className="stats-title">งานที่ยังค้างอยู่</p>
                         <h3 className="stats-value">12</h3>
                     </div>
                 </div>
@@ -63,7 +63,7 @@ const MaintenancePage = () => {
                         </div>
                     </div>
                     <div className="stats-content">
-                        <p className="stats-title">Completed (This Month)</p>
+                        <p className="stats-title">งานที่เสร็จแล้ว (เดือนนี้)</p>
                         <h3 className="stats-value">48</h3>
                     </div>
                 </div>
@@ -71,23 +71,23 @@ const MaintenancePage = () => {
 
             <div className="card">
                 <div className="card-header-flex">
-                    <h3>Active Requests</h3>
+                    <h3>รายการซ่อมบำรุงล่าสุด</h3>
                 </div>
 
                 <table className="admin-table">
                     <thead>
                         <tr>
-                            <th>Room</th>
-                            <th>Issue Description</th>
-                            <th>Priority</th>
-                            <th>Status</th>
-                            <th>Requested</th>
-                            <th>Actions</th>
+                            <th>ห้อง</th>
+                            <th>รายละเอียดปัญหา</th>
+                            <th>ความสำคัญ</th>
+                            <th>สถานะ</th>
+                            <th>วันที่แจ้ง</th>
+                            <th>จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={6}>Loading requests...</td></tr>
+                            <tr><td colSpan={6}>กำลังโหลดข้อมูลการแจ้งซ่อม...</td></tr>
                         ) : requests.map((req: any) => (
                             <tr key={req.id}>
                                 <td className="font-bold">{req.room}</td>
@@ -95,17 +95,19 @@ const MaintenancePage = () => {
                                 <td>{getPriorityBadge(req.priority)}</td>
                                 <td>
                                     <span className={`status-badge status-${req.status.toLowerCase().replace('_', '-')}`}>
-                                        {req.status}
+                                        {req.status === 'PENDING' ? 'รอดำเนินการ' :
+                                            req.status === 'IN_PROGRESS' ? 'กำลังซ่อม' :
+                                                req.status === 'COMPLETED' ? 'เสร็จสิ้น' : req.status}
                                     </span>
                                 </td>
                                 <td>
                                     <div className="flex-center-gap text-muted text-xs">
                                         <Clock size={12} />
-                                        {new Date(req.created_at).toLocaleDateString()}
+                                        {new Date(req.created_at).toLocaleDateString('th-TH')}
                                     </div>
                                 </td>
                                 <td>
-                                    <button className="btn btn-secondary btn-sm">Manage</button>
+                                    <button className="btn btn-secondary btn-sm">จัดการ</button>
                                 </td>
                             </tr>
                         ))}

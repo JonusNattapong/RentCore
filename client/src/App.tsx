@@ -53,31 +53,31 @@ const SidebarItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: 
 const Dashboard = () => (
   <div className="dashboard-view fade-in">
     <div className="stats-grid">
-      <StatsCard title="Total Revenue" value="฿245,000" icon={CreditCard} color="#4f46e5" trend="+12.5%" trendUp />
-      <StatsCard title="Occupancy Rate" value="92%" icon={Building2} color="#10b981" trend="+2.4%" trendUp />
-      <StatsCard title="Active Tenants" value="124" icon={Users} color="#f59e0b" />
-      <StatsCard title="Pending Slips" value="8" icon={FileText} color="#ef4444" trend="Action required" />
+      <StatsCard title="รายได้ทั้งหมด" value="฿245,000" icon={CreditCard} color="#4f46e5" trend="+12.5%" trendUp />
+      <StatsCard title="อัตราการเข้าพัก" value="92%" icon={Building2} color="#10b981" trend="+2.4%" trendUp />
+      <StatsCard title="ผู้เช่าทั้งหมด" value="124" icon={Users} color="#f59e0b" />
+      <StatsCard title="สลิปรอตรวจสอบ" value="8" icon={FileText} color="#ef4444" trend="ต้องดำเนินการ" />
     </div>
 
     <div className="grid-2 mt-2">
       <div className="card">
-        <h3>Revenue Trend</h3>
+        <h3>แนวโน้มรายได้</h3>
         <div className="chart-placeholder">
           <div className="mock-chart-bar">
             {[30, 45, 60, 25, 80, 50, 90, 65, 75, 55, 85, 95].map((h, i) => <div key={i} className="bar" style={{ height: `${h}%` }}></div>)}
           </div>
           <div className="chart-labels">
-            <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
+            <span>ม.ค.</span><span>มี.ค.</span><span>พ.ค.</span><span>ก.ค.</span><span>ก.ย.</span><span>ธ.ค.</span>
           </div>
         </div>
       </div>
       <div className="card">
-        <h3>System Status</h3>
+        <h3>สถานะระบบและการแจ้งเตือน</h3>
         <div className="stats-list">
-          <div className="flex-center-gap text-xs"><Wrench size={14} className="text-error" /> 12 Pending repairs</div>
-          <div className="flex-center-gap text-xs"><Zap size={14} className="text-warning" /> Meter readings due today</div>
-          <div className="flex-center-gap text-xs"><FileText size={14} className="text-primary" /> 2 Leases expiring this week</div>
-          <div className="flex-center-gap text-xs"><History size={14} className="text-muted" /> Last backup: 2 hours ago</div>
+          <div className="flex-center-gap text-xs"><Wrench size={14} className="text-error" /> 12 รายการแจ้งซ่อมรออยู่</div>
+          <div className="flex-center-gap text-xs"><Zap size={14} className="text-warning" /> ถึงกำหนดจดมิเตอร์วันนี้</div>
+          <div className="flex-center-gap text-xs"><FileText size={14} className="text-primary" /> 2 สัญญาเช่าจะหมดอายุในสัปดาห์นี้</div>
+          <div className="flex-center-gap text-xs"><History size={14} className="text-muted" /> สำรองข้อมูลล่าสุด: 2 ชั่วโมงที่แล้ว</div>
         </div>
       </div>
     </div>
@@ -94,43 +94,43 @@ const Layout = ({ children, onLogout }: { children: React.ReactNode, onLogout: (
         </div>
 
         <nav className="sidebar-nav">
-          <div className="sidebar-group-label">OVERVIEW</div>
-          <SidebarItem to="/" icon={BarChart3} label="Dashboard" />
-          <SidebarItem to="/reports" icon={BarChart3} label="Analytics" />
+          <div className="sidebar-group-label">ภาพรวม</div>
+          <SidebarItem to="/" icon={BarChart3} label="แผงควบคุม" />
+          <SidebarItem to="/reports" icon={BarChart3} label="รายงานวิเคราะห์" />
 
-          <div className="sidebar-group-label">OPERATIONS</div>
-          <SidebarItem to="/branches" icon={Building2} label="Branches" />
-          <SidebarItem to="/rooms" icon={DoorClosed} label="Rooms" />
-          <SidebarItem to="/tenants" icon={Users} label="Tenants" />
-          <SidebarItem to="/leases" icon={FileText} label="Leases" />
-          <SidebarItem to="/daily" icon={Bed} label="Daily Stays" />
+          <div className="sidebar-group-label">การจัดการ</div>
+          <SidebarItem to="/branches" icon={Building2} label="สาขา/หอพัก" />
+          <SidebarItem to="/rooms" icon={DoorClosed} label="ห้องพัก" />
+          <SidebarItem to="/tenants" icon={Users} label="ข้อมูลผู้เช่า" />
+          <SidebarItem to="/leases" icon={FileText} label="สัญญาเช่า" />
+          <SidebarItem to="/daily" icon={Bed} label="เช่ารายวัน" />
 
-          <div className="sidebar-group-label">FINANCE</div>
-          <SidebarItem to="/invoices" icon={CreditCard} label="Verify Slips" />
-          <SidebarItem to="/expenses" icon={Wallet} label="Expenses" />
-          <SidebarItem to="/meters" icon={Zap} label="Utilities" />
+          <div className="sidebar-group-label">การเงิน</div>
+          <SidebarItem to="/invoices" icon={CreditCard} label="ตรวจสอบสลิป" />
+          <SidebarItem to="/expenses" icon={Wallet} label="รายจ่าย" />
+          <SidebarItem to="/meters" icon={Zap} label="จดมิเตอร์น้ำ-ไฟ" />
 
-          <div className="sidebar-group-label">ADMIN</div>
-          <SidebarItem to="/maintenance" icon={Wrench} label="Maintenance" />
-          <SidebarItem to="/staff" icon={Shield} label="Staff Users" />
-          <SidebarItem to="/audit" icon={History} label="Audit Logs" />
-          <SidebarItem to="/settings" icon={Settings} label="Settings" />
+          <div className="sidebar-group-label">ตั้งค่าระบบ</div>
+          <SidebarItem to="/maintenance" icon={Wrench} label="รายการแจ้งซ่อม" />
+          <SidebarItem to="/staff" icon={Shield} label="จัดการพนักงาน" />
+          <SidebarItem to="/audit" icon={History} label="บันทึกกิจกรรม" />
+          <SidebarItem to="/settings" icon={Settings} label="ตั้งค่าทั่วไป" />
         </nav>
 
         <div className="sidebar-footer">
           <button className="logout-btn" onClick={onLogout}>
             <LogOut size={20} />
-            <span>Logout</span>
+            <span>ออกจากระบบ</span>
           </button>
         </div>
       </aside>
 
       <main className="main-content">
         <header className="top-header">
-          <h2>Administrative Dashboard</h2>
+          <h2>ระบบบริหารจัดการหอพัก</h2>
           <div className="user-profile">
             <div className="avatar">A</div>
-            <span>Admin User</span>
+            <span>ผู้ดูแลระบบ</span>
           </div>
         </header>
         <div className="content-area">

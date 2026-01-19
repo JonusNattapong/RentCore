@@ -12,9 +12,9 @@ const ExpensesPage = () => {
     const loadExpenses = async () => {
         try {
             setExpenses([
-                { id: 1, category: 'Maintenance', description: 'AC Repair Room 204', amount: 1500, date: new Date(), method: 'CASH' },
-                { id: 2, category: 'Utilities', description: 'Electric Bill June (Central)', amount: 12400, date: new Date(), method: 'TRANSFER' },
-                { id: 3, category: 'Staff', description: 'Security Guard Salary', amount: 15000, date: new Date(), method: 'TRANSFER' },
+                { id: 1, category: 'การซ่อมบำรุง', description: 'ซ่อมแอร์ ห้อง 204', amount: 1500, date: new Date(), method: 'เงินสด' },
+                { id: 2, category: 'สาธารณูปโภค', description: 'ค่าน้ำ-ไฟ ส่วนกลาง เดือนมิถุนายน', amount: 12400, date: new Date(), method: 'เงินโอน' },
+                { id: 3, category: 'พนักงาน', description: 'เงินเดือน รปภ.', amount: 15000, date: new Date(), method: 'เงินโอน' },
             ]);
         } catch (err) {
             console.error(err);
@@ -27,12 +27,12 @@ const ExpensesPage = () => {
         <div className="page-container fade-in">
             <div className="page-header">
                 <div>
-                    <h1>Expense Tracking</h1>
-                    <p>Log and monitor operational costs for your properties.</p>
+                    <h1>บันทึกรายจ่าย</h1>
+                    <p>บันทึกและติดตามค่าใช้จ่ายต่างๆ ของหอพัก</p>
                 </div>
                 <button className="btn btn-primary">
                     <Plus size={18} />
-                    Add Expense
+                    เพิ่มรายการจ่าย
                 </button>
             </div>
 
@@ -44,7 +44,7 @@ const ExpensesPage = () => {
                         </div>
                     </div>
                     <div className="stats-content">
-                        <p className="stats-title">Total Expenses (Month)</p>
+                        <p className="stats-title">รายจ่ายทั้งหมด (เดือนนี้)</p>
                         <h3 className="stats-value">฿28,900</h3>
                     </div>
                 </div>
@@ -55,8 +55,8 @@ const ExpensesPage = () => {
                         </div>
                     </div>
                     <div className="stats-content">
-                        <p className="stats-title">Largest Category</p>
-                        <h3 className="stats-value">Staffing</h3>
+                        <p className="stats-title">หมวดหมู่ที่จ่ายมากที่สุด</p>
+                        <h3 className="stats-value">เงินเดือนพนักงาน</h3>
                     </div>
                 </div>
             </div>
@@ -65,20 +65,20 @@ const ExpensesPage = () => {
                 <table className="admin-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Method</th>
-                            <th>Actions</th>
+                            <th>วันที่</th>
+                            <th>หมวดหมู่</th>
+                            <th>รายละเอียด</th>
+                            <th>จำนวนเงิน</th>
+                            <th>วิธีการจ่าย</th>
+                            <th>จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={6}>Loading expenses...</td></tr>
+                            <tr><td colSpan={6}>กำลังโหลดข้อมูลรายจ่าย...</td></tr>
                         ) : expenses.map((exp: any) => (
                             <tr key={exp.id}>
-                                <td>{new Date(exp.date).toLocaleDateString()}</td>
+                                <td>{new Date(exp.date).toLocaleDateString('th-TH')}</td>
                                 <td>
                                     <span className="badge-pill bg-primary-light text-primary">{exp.category}</span>
                                 </td>

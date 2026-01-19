@@ -12,23 +12,26 @@ const RoomsPage = () => {
         loadInitialData();
     }, []);
 
-    useEffect(() => {
-        loadRooms();
-    }, [selectedBranch]);
-
     const loadInitialData = async () => {
         try {
-            const { data: bData } = await branchService.getBranches();
-            setBranches(bData);
+            const [roomsRes, branchesRes] = await Promise.all([
+                roomService.getRooms(),
+                branchService.getBranches()
+            ]);
+            setRooms(roomsRes.data);
+            setBranches(branchesRes.data);
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const loadRooms = async () => {
+    const handleBranchChange = async (branchId: string) => {
+        setSelectedBranch(branchId);
         setLoading(true);
         try {
-            const { data } = await roomService.getRooms(selectedBranch);
+            const { data } = await roomService.getRooms(branchId);
             setRooms(data);
         } catch (err) {
             console.error(err);
@@ -40,18 +43,21 @@ const RoomsPage = () => {
     return (
         <div className="page-container">
             <div className="page-header">
-                <h1>Room Inventory</h1>
+                <div>
+                    <h1>จัดการห้องพัก</h1>
+                    <p>ตรวจสอบสถานะห้องพักและจัดการข้อมูลห้องทั้งหมด</p>
+                </div>
                 <div className="header-filters">
                     <div className="search-box">
                         <Search size={18} />
-                        <input type="text" placeholder="Search room number..." />
+                        <input type="text" placeholder="หาเลขห้อง..." />
                     </div>
                     <select
-                        value={selectedBranch}
-                        onChange={(e) => setSelectedBranch(e.target.value)}
                         className="select-filter"
+                        value={selectedBranch}
+                        onChange={(e) => handleBranchChange(e.target.value)}
                     >
-                        <option value="">All Branches</option>
+                        <option value="">ทุกสาขา</option>
                         {branches.map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                         ))}
@@ -60,7 +66,7 @@ const RoomsPage = () => {
             </div>
 
             {loading ? (
-                <div className="loading">Loading rooms...</div>
+                <div className="loading">กำลังโหลดข้อมูลห้อง...</div>
             ) : (
                 <div className="rooms-grid">
                     {rooms.map(room => (
@@ -71,29 +77,30 @@ const RoomsPage = () => {
                                     <span>{room.room_number}</span>
                                 </div>
                                 <span className={`status-badge status-${room.status.toLowerCase()}`}>
-                                    {room.status}
+                                    {room.status === 'AVAILABLE' ? 'ว่าง' :
+                                        room.status === 'OCCUPIED' ? 'มีผู้เช่า' :
+                                            room.status === 'MAINTENANCE' ? 'ปรับปรุง' : room.status}
                                 </span>
                             </div>
 
-                            <div className="room-body">
-                                <div className="room-info">
-                                    <Tag size={16} />
-                                    <span>{room.room_type || 'Standard'}</span>
-                                </div>
-                                {room.current_tenant && (
-                                    <div className="room-info">
-                                        <User size={16} />
-                                        <span>{room.current_tenant}</span>
-                                    </div>
-                                )}
+                            <div className="room-info">
+                                <Tag size={14} />
+                                <span>{room.type_name}</span>
                             </div>
+
+                            {room.tenant_name && (
+                                <div className="room-info">
+                                    <User size={14} />
+                                    <span>{room.tenant_name}</span>
+                                </div>
+                            )}
 
                             <div className="room-footer">
                                 <div className="room-price">
-                                    <label>Monthly Rent</label>
-                                    <span>฿{Number(room.monthly_rate).toLocaleString()}</span>
+                                    <label>ค่าเช่ารายเดือน</label>
+                                    <span>฿{Number(room.base_price).toLocaleString()}</span>
                                 </div>
-                                <button className="btn btn-secondary btn-sm">Manage</button>
+                                <button className="btn btn-secondary btn-sm">รายละเอียด</button>
                             </div>
                         </div>
                     ))}

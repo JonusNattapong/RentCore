@@ -1,159 +1,139 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Check, X, Eye, FileText, AlertTriangle } from 'lucide-react';
-
-interface Payment {
-    id: string;
-    invoice_id: string;
-    invoice_no: string;
-    tenant_name: string;
-    amount: number;
-    status: string;
-    transaction_ref: string;
-    file_url: string;
-    created_at: string;
-    ocr_amount?: number;
-    ocr_match?: boolean;
-}
+import { paymentService } from '../services/api';
+import { CheckCircle, XCircle, Eye, AlertCircle, Image as ImageIcon } from 'lucide-react';
 
 const PaymentReview = () => {
-    const [payments, setPayments] = useState<Payment[]>([]);
+    const [payments, setPayments] = useState<any[]>([]);
+    const [selectedPayment, setSelectedPayment] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
     useEffect(() => {
-        fetchPayments();
+        loadPayments();
     }, []);
 
-    const fetchPayments = async () => {
+    const loadPayments = async () => {
         try {
-            const response = await axios.get('/api/v1/payments/pending');
-            setPayments(response.data);
-        } catch (error) {
-            console.error('Failed to fetch payments:', error);
+            const { data } = await paymentService.getPendingPayments();
+            setPayments(data);
+        } catch (err) {
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
     const handleConfirm = async (id: string) => {
-        if (!window.confirm('Confirm this payment and send receipt?')) return;
+        if (!confirm('ยืนยันความถูกต้องของสลิปและออกใบเสร็จใช่หรือไม่?')) return;
         try {
-            await axios.post(`/api/v1/payments/${id}/confirm`);
-            fetchPayments();
+            await paymentService.confirmPayment(id);
+            loadPayments();
             setSelectedPayment(null);
-        } catch (error) {
-            alert('Confirmation failed');
+            alert('ยืนยันชำระเงินเรียบร้อยแล้ว');
+        } catch (err) {
+            alert('เกิดข้อผิดพลาดในการยืนยัน');
         }
     };
-
-    const handleReject = async (id: string) => {
-        const reason = window.prompt('Reason for rejection:');
-        if (reason === null) return;
-        try {
-            await axios.post(`/api/v1/payments/${id}/reject`, { reason });
-            fetchPayments();
-            setSelectedPayment(null);
-        } catch (error) {
-            alert('Rejection failed');
-        }
-    };
-
-    if (loading) return <div>Loading payments...</div>;
 
     return (
-        <div className="payment-review-container">
-            <div className="card">
-                <div className="card-header">
-                    <h3>Pending Slip Verifications</h3>
-                    <p>Review OCR data and confirm tenant payments.</p>
+        <div className="page-container">
+            <div className="page-header">
+                <div>
+                    <h1>ตรวจสอบการชำระเงิน</h1>
+                    <p>ตรวจสอบสลิปโอนเงินด้วยระบบ OCR และยืนยันการรับเงิน</p>
                 </div>
-
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Tenant</th>
-                            <th>Inv #</th>
-                            <th>Amount</th>
-                            <th>OCR Match</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {payments.map(p => (
-                            <tr key={p.id}>
-                                <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                                <td>{p.tenant_name}</td>
-                                <td>{p.invoice_no}</td>
-                                <td>{p.amount.toLocaleString()} THB</td>
-                                <td>
-                                    {p.ocr_match ? (
-                                        <span className="status-badge status-success">MATCH</span>
-                                    ) : (
-                                        <span className="status-badge status-error">MISMATCH</span>
-                                    )}
-                                </td>
-                                <td className="actions">
-                                    <button onClick={() => setSelectedPayment(p)} className="btn-icon">
-                                        <Eye size={18} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
             </div>
 
-            {selectedPayment && (
-                <div className="modal-overlay">
-                    <div className="modal card">
-                        <div className="modal-header">
-                            <h2>Review Slip: {selectedPayment.invoice_no}</h2>
-                            <button onClick={() => setSelectedPayment(null)}><X /></button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="slip-viewer">
-                                <img src={`/api/v1/payments/slips/${selectedPayment.id}`} alt="Payment Slip" />
-                            </div>
-                            <div className="slip-details">
-                                <div className="detail-group">
-                                    <label>Ref Number</label>
-                                    <p>{selectedPayment.transaction_ref || 'N/A'}</p>
-                                </div>
-                                <div className="detail-group">
-                                    <label>Transaction Amount</label>
-                                    <p className="large-text">{selectedPayment.amount.toLocaleString()} THB</p>
-                                </div>
-                                {selectedPayment.ocr_amount && (
-                                    <div className={`ocr-box ${selectedPayment.ocr_match ? 'success' : 'warning'}`}>
-                                        <div className="ocr-header">
-                                            <FileText size={16} />
-                                            <span>OCR DETECTED</span>
-                                        </div>
-                                        <div className="ocr-value">
-                                            {selectedPayment.ocr_amount.toLocaleString()} THB
-                                        </div>
-                                        {!selectedPayment.ocr_match && (
-                                            <div className="ocr-alert">
-                                                <AlertTriangle size={14} />
-                                                <span>Amount mismatch with invoice!</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button onClick={() => handleReject(selectedPayment.id)} className="btn btn-danger">Reject Slip</button>
-                            <button onClick={() => handleConfirm(selectedPayment.id)} className="btn btn-primary">
-                                <Check size={18} />
-                                Confirm Payment
-                            </button>
-                        </div>
-                    </div>
+            <div className="grid-2">
+                <div className="card">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ผู้เช่า/ห้อง</th>
+                                <th>ยอดเงิน</th>
+                                <th>สถานะ OCR</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan={4}>กำลังโหลดข้อมูล...</td></tr>
+                            ) : payments.length === 0 ? (
+                                <tr><td colSpan={4} className="text-center py-4">ไม่มีรายการรอตรวจสอบ</td></tr>
+                            ) : (
+                                payments.map(p => (
+                                    <tr key={p.id} className={selectedPayment?.id === p.id ? 'row-active' : ''}>
+                                        <td>
+                                            <div className="font-bold">{p.tenant_name}</div>
+                                            <div className="text-xs text-muted">ห้อง {p.room_number}</div>
+                                        </td>
+                                        <td className="font-bold text-primary">฿{Number(p.amount).toLocaleString()}</td>
+                                        <td>
+                                            {p.ocr_status === 'MATCH' ? (
+                                                <span className="badge-pill bg-success">ข้อมูลตรง</span>
+                                            ) : (
+                                                <span className="badge-pill bg-error">ต้องตรวจสอบ</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <button
+                                                className="btn-icon"
+                                                onClick={() => setSelectedPayment(p)}
+                                            >
+                                                <Eye size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
-            )}
+
+                <div className="card">
+                    {selectedPayment ? (
+                        <div className="review-panel fade-in">
+                            <h3>รายละเอียดการตรวจสอบ</h3>
+                            <div className="slip-preview mt-2">
+                                <img
+                                    src={paymentService.getSlipUrl(selectedPayment.id)}
+                                    alt="Payment Slip"
+                                    className="img-fluid rounded"
+                                />
+                            </div>
+
+                            <div className="ocr-comparison mt-2">
+                                <div className={`comparison-item ${selectedPayment.ocr_amount_match ? 'match' : 'mismatch'}`}>
+                                    <label>ยอดเงินในสลิป (OCR)</label>
+                                    <div className="value">
+                                        <span>฿{Number(selectedPayment.ocr_amount).toLocaleString()}</span>
+                                        {selectedPayment.ocr_amount_match ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="action-footer mt-2">
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => alert('ฟีเจอร์นี้กำลังพัฒนา')}
+                                >
+                                    <XCircle size={18} /> ปฏิเสธ
+                                </button>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => handleConfirm(selectedPayment.id)}
+                                >
+                                    <CheckCircle size={18} /> ยืนยันความถูกต้อง
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="empty-state">
+                            <ImageIcon size={48} className="text-muted" />
+                            <p>กรุณาเลือกรายการเพื่อตรวจสอบสลิป</p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

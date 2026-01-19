@@ -25,12 +25,12 @@ const MetersPage = () => {
         <div className="page-container">
             <div className="page-header">
                 <div>
-                    <h1>Utility Monitoring</h1>
-                    <p>Record and track electricity and water meter readings.</p>
+                    <h1>จดมิเตอร์น้ำ-ไฟ</h1>
+                    <p>บันทึกและตรวจสอบเลขมิเตอร์ไฟและน้ำประจำเดือน</p>
                 </div>
                 <button className="btn btn-primary">
                     <Send size={18} />
-                    Submit New Readings
+                    บันทึกข้อมูลใหม่
                 </button>
             </div>
 
@@ -42,7 +42,7 @@ const MetersPage = () => {
                         </div>
                     </div>
                     <div className="stats-content">
-                        <p className="stats-title">Avg Electricity (kWh)</p>
+                        <p className="stats-title">ค่าเฉลี่ยไฟฟ้า (หน่วย)</p>
                         <h3 className="stats-value">142.5</h3>
                     </div>
                 </div>
@@ -53,27 +53,27 @@ const MetersPage = () => {
                         </div>
                     </div>
                     <div className="stats-content">
-                        <p className="stats-title">Avg Water (m³)</p>
+                        <p className="stats-title">ค่าเฉลี่ยน้ำประปา (หน่วย)</p>
                         <h3 className="stats-value">12.2</h3>
                     </div>
                 </div>
             </div>
 
             <div className="card">
-                <h3>Latest Readings by Room</h3>
+                <h3>รายการมิเตอร์แยกตามห้อง</h3>
                 <table className="admin-table">
                     <thead>
                         <tr>
-                            <th>Room</th>
-                            <th>Electricity (Prev/Curr)</th>
-                            <th>Water (Prev/Curr)</th>
-                            <th>Units Used</th>
-                            <th>Status</th>
+                            <th>เลขห้อง</th>
+                            <th>ไฟฟ้า (ก่อน/หลัง)</th>
+                            <th>น้ำประปา (ก่อน/หลัง)</th>
+                            <th>จำนวนที่ใช้</th>
+                            <th>สถานะ</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={5}>Loading readings...</td></tr>
+                            <tr><td colSpan={5}>กำลังโหลดข้อมูล...</td></tr>
                         ) : readings.map((r: any) => (
                             <tr key={r.room_id}>
                                 <td>{r.room_number}</td>
@@ -81,8 +81,8 @@ const MetersPage = () => {
                                 <td>{r.last_water} → {r.curr_water}</td>
                                 <td>
                                     <div className="units-info">
-                                        <span className="badge badge-yellow">{r.curr_electric - r.last_electric} kWh</span>
-                                        <span className="badge badge-blue">{r.curr_water - r.last_water} m³</span>
+                                        <span className="badge badge-yellow">{r.curr_electric - r.last_electric} หน่วย</span>
+                                        <span className="badge badge-blue">{r.curr_water - r.last_water} หน่วย</span>
                                     </div>
                                 </td>
                                 <td>
